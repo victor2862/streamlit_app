@@ -1,5 +1,9 @@
 # Ambiente virtual Poetry
 .venv/
 
+# Arquivos compilados Python
+*.pyc
+__pycache__/
+
 # Variáveis de ambiente
 .env
