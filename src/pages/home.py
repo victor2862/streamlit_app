@@ -1,3 +1,3 @@
 import streamlit as st
 
-st.write("Home")
+st.write("# :material/home: Home")
