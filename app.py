@@ -29,9 +29,12 @@ home = st.Page("src/pages/home.py", title="Home", icon=":material/home:")
 projetos = st.Page("src/pages/projetos.py", title="Projetos", icon=":material/folder_open:")
 visao_geral_projeto = st.Page("src/pages/visao_geral_projeto.py", title="Visão Geral", icon=":material/assessment:")
 
+try: header_projetos = st.session_state.projeto_atual['nome']
+except: header_projetos = "Nenhum projeto carregado"
+
 pg = st.navigation({
     "Início": [home, projetos],
-    "Projetos": [visao_geral_projeto]
+    header_projetos: [visao_geral_projeto]
 })
 
 pg.run()

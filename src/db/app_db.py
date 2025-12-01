@@ -38,6 +38,7 @@ class AppDB:
     def listar_projetos(self):
         with self.connect() as conn:
             df = pd.read_sql_query("SELECT * FROM projetos", conn)
+            df.set_index('id', inplace=True)
             return df
 
     # Inserir projetos de exemplo caso a base esteja vazia

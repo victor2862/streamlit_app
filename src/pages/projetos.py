@@ -4,7 +4,6 @@ import streamlit as st
 
 # Recupera a lista de projetos do banco de dados
 projetos = st.session_state.db.listar_projetos()
-projetos.set_index('id', inplace=True)
 
 
 # Diálogo de criação de projetos
@@ -22,7 +21,6 @@ def adicionar_projeto():
         # Validação dos campos
         if nome == "" or cliente == "":
             st.error("Os campos Nome e Cliente são obrigatórios.")
-            #nome = ""; cliente = ""; descricao = ""
         
         # Inserção no banco de dados
         else:
@@ -31,16 +29,23 @@ def adicionar_projeto():
 
 
 # Carregamento de projetos
+@st.dialog("Carregar projeto")
 def carregar_projeto():
-    st.session_state.projeto_atual = st.session_state["tabela_projetos"]["selection"]["rows"][0]
-    st.write(f"Projeto {st.session_state.projeto_atual} carregado com sucesso!")
+
+    # Seleção do projeto
+    id_projeto = st.selectbox("Selecione o projeto para carregar:",
+                              options=projetos.index.tolist(),
+                              format_func=lambda x: projetos.loc[x, 'nome'])
+    
+    # Botão de carregamento
+    if st.button("Carregar", width="stretch"):
+        st.session_state.projeto_atual = projetos.loc[id_projeto]
+        st.rerun()
 
 
 # Elementos da página
 st.write("# :material/folder_open: Projetos")
 
-
-# Exibição da lista de projetos
 if projetos.empty:
     st.write("Nenhum projeto registrado.")
 else:
@@ -50,11 +55,12 @@ else:
         "cliente": st.column_config.TextColumn("Cliente"),
         "descricao": st.column_config.TextColumn("Descrição", width="large")
     }
-    st.dataframe(projetos, column_config=config, width="stretch", selection_mode="single-row", key="tabela_projetos", on_select="rerun")
+    st.dataframe(projetos, column_config=config, width="stretch")
 
-
-st.sidebar.button(":material/add: Adicionar projeto", width="stretch", on_click=adicionar_projeto)
+st.sidebar.button(":material/add: Adicionar projeto",
+                  width="stretch",
+                  on_click=adicionar_projeto)
 st.sidebar.button(":material/upload: Carregar projeto", 
                   width="stretch",
-                  disabled=(projetos.empty or len(st.session_state["tabela_projetos"]["selection"]["rows"]) == 0),
+                  disabled=projetos.empty,
                   on_click=carregar_projeto)
