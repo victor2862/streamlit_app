@@ -40,6 +40,13 @@ class AppDB:
             df = pd.read_sql_query("SELECT * FROM projetos", conn)
             df.set_index('id', inplace=True)
             return df
+        
+    # Deletar um projeto pelo ID
+    def deletar_projeto(self, id_projeto):
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM projetos WHERE id = ?', (id_projeto,))
+            conn.commit()
 
     # Inserir projetos de exemplo caso a base esteja vazia
     def inserir_projetos_exemplo(self):

@@ -17,6 +17,16 @@ st.set_page_config(
 )
 
 
+# Inicialização das variáveis de sessão
+if 'msg_projeto_criado' not in st.session_state:
+    st.session_state.msg_projeto_criado = 0
+if 'msg_projeto_carregado' not in st.session_state:
+    st.session_state.msg_projeto_carregado = 0
+if 'msg_projeto_deletado' not in st.session_state:
+    st.session_state.msg_projeto_deletado = 0
+if 'projeto_atual' not in st.session_state:
+    st.session_state.projeto_atual = None
+
 # Inicialização do banco de dados
 if 'db' not in st.session_state:
     st.session_state.db = AppDB()

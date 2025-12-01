@@ -6,6 +6,18 @@ import streamlit as st
 projetos = st.session_state.db.listar_projetos()
 
 
+# Mensagens de status
+if st.session_state.msg_projeto_criado == 1:
+    st.success("Projeto criado com sucesso!")
+    st.session_state.msg_projeto_criado = 0
+if st.session_state.msg_projeto_carregado == 1:
+    st.success("Projeto carregado com sucesso!")
+    st.session_state.msg_projeto_carregado = 0
+if st.session_state.msg_projeto_deletado == 1:
+    st.success("Projeto deletado com sucesso!")
+    st.session_state.msg_projeto_deletado = 0
+
+
 # Diálogo de criação de projetos
 @st.dialog("Adicionar projeto")
 def adicionar_projeto():
@@ -16,7 +28,7 @@ def adicionar_projeto():
     descricao = st.text_input("Descrição:", placeholder="Opcional")
     
     # Botão de criação
-    if st.button("Criar"):
+    if st.button("Criar", width="stretch"):
 
         # Validação dos campos
         if nome == "" or cliente == "":
@@ -25,6 +37,7 @@ def adicionar_projeto():
         # Inserção no banco de dados
         else:
             st.session_state.db.adicionar_projeto(nome, cliente, descricao)
+            st.session_state.msg_projeto_criado = 1
             st.rerun()
 
 
@@ -40,7 +53,33 @@ def carregar_projeto():
     # Botão de carregamento
     if st.button("Carregar", width="stretch"):
         st.session_state.projeto_atual = projetos.loc[id_projeto]
+        st.session_state.msg_projeto_carregado = 1
         st.rerun()
+
+
+# Deletar projetos
+@st.dialog("Deletar projeto")
+def deletar_projeto():
+
+    # Seleção do projeto
+    id_projeto = st.selectbox("Selecione o projeto para deletar:",
+                              options=projetos.index.tolist(),
+                              format_func=lambda x: projetos.loc[x, 'nome'])
+    
+    st.text("Se deseja realmente deletar o projeto, escreva no campo abaixo:")
+    st.markdown(f":red[**Deletar completamente projeto {projetos.loc[id_projeto, 'nome']}**]")
+    texto = st.text_input(label="Confirmação de deleção:")
+
+    # Botão de deleção
+    if st.button("Deletar", width="stretch", type="primary"):
+        if texto == f"Deletar completamente projeto {projetos.loc[id_projeto, 'nome']}":
+            st.session_state.db.deletar_projeto(id_projeto)
+            st.session_state.msg_projeto_deletado = 1
+            if st.session_state.projeto_atual.name == id_projeto:
+                st.session_state.projeto_atual = None
+            st.rerun()
+        else:
+            st.error("Texto incorreto. Operação de deleção cancelada.")
 
 
 # Elementos da página
@@ -64,3 +103,7 @@ st.sidebar.button(":material/upload: Carregar projeto",
                   width="stretch",
                   disabled=projetos.empty,
                   on_click=carregar_projeto)
+st.sidebar.button(":material/delete: Deletar projeto",
+                  width="stretch",
+                  disabled=projetos.empty,
+                  on_click=deletar_projeto)
