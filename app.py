@@ -8,13 +8,7 @@ st.set_page_config(
     page_title="Meu primeiro app",
     page_icon="🧊",
     layout="centered",
-    initial_sidebar_state="auto",
-    menu_items={
-        'Get Help': 'https://www.extremelycoolapp.com/help',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# This is a header. This is an *extremely* cool app!"
-    }
-)
+    initial_sidebar_state="auto")
 
 
 # Inicialização das variáveis de sessão
@@ -26,6 +20,9 @@ if 'msg_projeto_deletado' not in st.session_state:
     st.session_state.msg_projeto_deletado = 0
 if 'projeto_atual' not in st.session_state:
     st.session_state.projeto_atual = None
+if 'contexto_atual' not in st.session_state:
+    st.session_state.contexto_atual = None
+
 
 # Inicialização do banco de dados
 if 'db' not in st.session_state:
@@ -35,19 +32,18 @@ if 'db' not in st.session_state:
 
 
 # Criação das páginas e do menu de navegação
-home = st.Page("src/pages/home.py", title="Home", icon=":material/home:")
-projetos = st.Page("src/pages/projetos.py", title="Projetos", icon=":material/folder_open:")
-visao_geral_projeto = st.Page("src/pages/visao_geral_projeto.py", title="Visão Geral", icon=":material/assessment:")
+pag_home = st.Page("src/pages/home.py", title="Home", icon=":material/home:")
+pag_projetos = st.Page("src/pages/projetos.py", title="Projetos", icon=":material/folder_open:")
+pag_visao_geral = st.Page("src/pages/visao_geral.py", title="Visão Geral", icon=":material/assessment:")
+pag_contexto = st.Page("src/pages/contexto.py", title="Gestão de contexto", icon=":material/book:")
+
 
 try: header_projetos = st.session_state.projeto_atual['nome']
 except: header_projetos = "Nenhum projeto carregado"
 
 pg = st.navigation({
-    "Início": [home, projetos],
-    header_projetos: [visao_geral_projeto]
+    "Início": [pag_home, pag_projetos],
+    header_projetos: [pag_visao_geral, pag_contexto]
 })
 
 pg.run()
-
-
-

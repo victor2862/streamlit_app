@@ -52,7 +52,12 @@ def carregar_projeto():
     
     # Botão de carregamento
     if st.button("Carregar", width="stretch"):
+        
+        # Definição do projeto atual na sessão
         st.session_state.projeto_atual = projetos.loc[id_projeto]
+        st.session_state.contexto_atual = st.session_state.db.obter_ultimo_contexto(id_projeto)
+        
+        # Mensagem de sucesso
         st.session_state.msg_projeto_carregado = 1
         st.rerun()
 
