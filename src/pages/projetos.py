@@ -6,18 +6,6 @@ import streamlit as st
 projetos = st.session_state.db.listar_projetos()
 
 
-# Mensagens de status
-if st.session_state.msg_projeto_criado == 1:
-    st.success("Projeto criado com sucesso!")
-    st.session_state.msg_projeto_criado = 0
-if st.session_state.msg_projeto_carregado == 1:
-    st.success("Projeto carregado com sucesso!")
-    st.session_state.msg_projeto_carregado = 0
-if st.session_state.msg_projeto_deletado == 1:
-    st.success("Projeto deletado com sucesso!")
-    st.session_state.msg_projeto_deletado = 0
-
-
 # Diálogo de criação de projetos
 @st.dialog("Adicionar projeto")
 def adicionar_projeto():
@@ -80,16 +68,32 @@ def deletar_projeto():
         if texto == f"Deletar completamente projeto {projetos.loc[id_projeto, 'nome']}":
             st.session_state.db.deletar_projeto(id_projeto)
             st.session_state.msg_projeto_deletado = 1
-            if st.session_state.projeto_atual.name == id_projeto:
-                st.session_state.projeto_atual = None
+            try:
+                if st.session_state.projeto_atual.name == id_projeto:
+                    st.session_state.projeto_atual = None
+            except: pass
             st.rerun()
         else:
             st.error("Texto incorreto. Operação de deleção cancelada.")
 
 
-# Elementos da página
+# Cabeçalho da página
 st.write("# :material/folder_open: Projetos")
 
+
+# Mensagens de status
+if st.session_state.msg_projeto_criado == 1:
+    st.success("Projeto criado com sucesso!")
+    st.session_state.msg_projeto_criado = 0
+if st.session_state.msg_projeto_carregado == 1:
+    st.success("Projeto carregado com sucesso!")
+    st.session_state.msg_projeto_carregado = 0
+if st.session_state.msg_projeto_deletado == 1:
+    st.success("Projeto deletado com sucesso!")
+    st.session_state.msg_projeto_deletado = 0
+
+
+# Conteúdo da página
 if projetos.empty:
     st.write("Nenhum projeto registrado.")
 else:

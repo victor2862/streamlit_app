@@ -11,13 +11,18 @@ st.set_page_config(
     initial_sidebar_state="auto")
 
 
-# Inicialização das variáveis de sessão
+# Inicialização das tags de mensagem
 if 'msg_projeto_criado' not in st.session_state:
     st.session_state.msg_projeto_criado = 0
 if 'msg_projeto_carregado' not in st.session_state:
     st.session_state.msg_projeto_carregado = 0
 if 'msg_projeto_deletado' not in st.session_state:
     st.session_state.msg_projeto_deletado = 0
+if 'msg_contexto_restaurado' not in st.session_state:
+    st.session_state.msg_contexto_restaurado = 0
+
+
+# Inicialização das variáveis de sessão
 if 'projeto_atual' not in st.session_state:
     st.session_state.projeto_atual = None
 if 'contexto_atual' not in st.session_state:
@@ -28,7 +33,6 @@ if 'contexto_atual' not in st.session_state:
 if 'db' not in st.session_state:
     st.session_state.db = AppDB()
     st.session_state.db.inicializar_banco()
-    st.session_state.db.inserir_projetos_exemplo()
 
 
 # Criação das páginas e do menu de navegação

@@ -21,7 +21,8 @@ class AppDB:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     nome TEXT NOT NULL,
                     cliente TEXT NOT NULL,
-                    descricao TEXT
+                    descricao TEXT,
+                    no_contextos INTEGER DEFAULT 0
                     )
             ''')
             conn.commit()
@@ -32,7 +33,10 @@ class AppDB:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     projeto_id INTEGER NOT NULL,
                     contexto TEXT NOT NULL,
-                    FOREIGN KEY (projeto_id) REFERENCES projetos(id) ON DELETE CASCADE
+                    versao INTEGER,
+                    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (projeto_id) REFERENCES projetos(id) ON DELETE CASCADE,
+                    UNIQUE(projeto_id, versao)
                     )
             ''')
             conn.commit()
@@ -64,22 +68,7 @@ class AppDB:
             cursor.execute('DELETE FROM projetos WHERE id = ?', (id_projeto,))
             conn.commit()
 
-    # Inserir projetos de exemplo caso a base esteja vazia
-    def inserir_projetos_exemplo(self):
-        exemplos = [
-            ("Projeto A", "Cliente X", "Descrição do Projeto A"),
-            ("Projeto B", "Cliente Y", "Descrição do Projeto B"),
-            ("Projeto C", "Cliente Z", ""),
-        ]
-        with self.connect() as conn:
-            cursor = conn.cursor()
-            contagem = cursor.execute('SELECT COUNT(*) FROM projetos').fetchone()[0]
-            if not contagem:
-                cursor.executemany('''
-                    INSERT INTO projetos (nome, cliente, descricao)
-                    VALUES (?, ?, ?)
-                ''', exemplos)
-                conn.commit()
+
 
 
     ### Manipulação da tabela de contextos ---------------------------------------------------------
@@ -88,10 +77,22 @@ class AppDB:
     def adicionar_contexto(self, projeto_id, contexto):
         with self.connect() as conn:
             cursor = conn.cursor()
+
+            # Obter a próxima versão do contexto
+            versao = cursor.execute('''
+                SELECT no_contextos FROM projetos WHERE id = ?
+            ''', (projeto_id,)).fetchone()[0] + 1
+
+            # Atualizar o número de contextos no projeto
             cursor.execute('''
-                INSERT INTO contextos (projeto_id, contexto)
-                VALUES (?, ?)
-            ''', (projeto_id, contexto))
+                UPDATE projetos SET no_contextos = ? WHERE id = ?
+            ''', (versao, projeto_id))
+
+            # Inserir o novo contexto
+            cursor.execute('''
+                INSERT INTO contextos (projeto_id, contexto, versao)
+                VALUES (?, ?, ?)
+            ''', (projeto_id, contexto, versao))
             conn.commit()
     
     # Listar contextos de um projeto
@@ -100,7 +101,11 @@ class AppDB:
             df = pd.read_sql_query('''
                 SELECT * FROM contextos WHERE projeto_id = ?
             ''', conn, params=(projeto_id,))
+
+            # Formatação do DataFrame
             df.set_index('id', inplace=True)
+            df['data_criacao'] = pd.to_datetime(df['data_criacao'])
+            df['data_criacao'] = df['data_criacao'].dt.strftime('%d/%m/%Y %H:%M')
             return df
         
     # Obter último contexto adicionado a um projeto
@@ -121,7 +126,21 @@ class AppDB:
             cursor = conn.cursor()
             cursor.execute('DELETE FROM contextos WHERE id = ?', (id_contexto,))
             conn.commit()
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # Inserir contextos de exemplo em markdown para um projeto específico
     def inserir_contextos_exemplo(self):
         exemplos = [
@@ -136,9 +155,22 @@ class AppDB:
                 for contexto in exemplos: self.adicionar_contexto(projeto_id, contexto)
 
 
-
-
-
+    # Inserir projetos de exemplo caso a base esteja vazia
+    def inserir_projetos_exemplo(self):
+        exemplos = [
+            ("Projeto A", "Cliente X", "Descrição do Projeto A"),
+            ("Projeto B", "Cliente Y", "Descrição do Projeto B"),
+            ("Projeto C", "Cliente Z", ""),
+        ]
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            contagem = cursor.execute('SELECT COUNT(*) FROM projetos').fetchone()[0]
+            if not contagem:
+                cursor.executemany('''
+                    INSERT INTO projetos (nome, cliente, descricao)
+                    VALUES (?, ?, ?)
+                ''', exemplos)
+                conn.commit()
 
 
 
@@ -147,6 +179,5 @@ if __name__ == "__main__":
     db.inicializar_banco()
     db.inserir_projetos_exemplo()
     db.inserir_contextos_exemplo()
-    
     # projetos = db.listar_projetos()
     # print(projetos)
