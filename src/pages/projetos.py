@@ -44,6 +44,7 @@ def carregar_projeto():
         # Definição do projeto atual na sessão
         st.session_state.projeto_atual = projetos.loc[id_projeto]
         st.session_state.contexto_atual = st.session_state.db.obter_ultimo_contexto(id_projeto)
+        st.session_state.contexto_visualizado = None
         
         # Mensagem de sucesso
         st.session_state.msg_projeto_carregado = 1
@@ -71,6 +72,8 @@ def deletar_projeto():
             try:
                 if st.session_state.projeto_atual.name == id_projeto:
                     st.session_state.projeto_atual = None
+                    st.session_state.contexto_atual = None
+                    st.session_state.contexto_visualizado = None
             except: pass
             st.rerun()
         else:

@@ -20,6 +20,8 @@ if 'msg_projeto_deletado' not in st.session_state:
     st.session_state.msg_projeto_deletado = 0
 if 'msg_contexto_restaurado' not in st.session_state:
     st.session_state.msg_contexto_restaurado = 0
+if 'msg_contexto_editado' not in st.session_state:
+    st.session_state.msg_contexto_editado = 0
 
 
 # Inicialização das variáveis de sessão
@@ -27,6 +29,11 @@ if 'projeto_atual' not in st.session_state:
     st.session_state.projeto_atual = None
 if 'contexto_atual' not in st.session_state:
     st.session_state.contexto_atual = None
+
+
+# Inicialização de variáveis auxiliares
+if 'contexto_visualizado' not in st.session_state:
+    st.session_state.contexto_visualizado = None
 
 
 # Inicialização do banco de dados
