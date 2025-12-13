@@ -3,6 +3,39 @@ import streamlit as st
 from datetime import datetime
 
 
+# Diálogo de geração de contexto
+@st.dialog("Gerar contexto", width="large")
+def gerar_contexto():
+    pass
+
+
+# Diálogo de edição de contexto
+@st.dialog("Editar contexto", width="large")
+def editar_contexto():
+    
+    # Define o valor inicial do campo de texto
+    if st.session_state.contexto_atual is None:
+        valor_inicial = ""
+    else:
+        valor_inicial = st.session_state.contexto_atual
+
+    # Estrutura da caixa de diálogo
+    input = st.text_area("Edite o contexto no campo abaixo:",
+                            label_visibility = "collapsed",
+                            height=700,
+                            value = st.session_state.contexto_atual)
+    
+    # Botão de salvar alterações
+    with st.container(horizontal=True):
+        st.space(size="stretch")
+        if st.button("Salvar alterações"):
+            projeto_id = int(st.session_state.projeto_atual.name)
+            st.session_state.db.adicionar_contexto(projeto_id, input)
+            st.session_state.contexto_atual = st.session_state.db.obter_ultimo_contexto(projeto_id)
+            st.session_state.msg_contexto_editado = 1
+            st.rerun()
+
+
 # Diálogo de restauração de contexto
 @st.dialog("Restaurar contexto", width="large")
 def restaurar_contexto():
@@ -51,31 +84,7 @@ def restaurar_contexto():
                 st.markdown(st.session_state.contexto_visualizado['contexto'])
 
 
-# Diálogo de edição de contexto
-@st.dialog("Editar contexto", width="large")
-def editar_contexto():
-    
-    # Define o valor inicial do campo de texto
-    if st.session_state.contexto_atual is None:
-        valor_inicial = ""
-    else:
-        valor_inicial = st.session_state.contexto_atual
 
-    # Estrutura da caixa de diálogo
-    input = st.text_area("Edite o contexto no campo abaixo:",
-                            label_visibility = "collapsed",
-                            height=700,
-                            value = st.session_state.contexto_atual)
-    
-    # Botão de salvar alterações
-    with st.container(horizontal=True):
-        st.space(size="stretch")
-        if st.button("Salvar alterações"):
-            projeto_id = int(st.session_state.projeto_atual.name)
-            st.session_state.db.adicionar_contexto(projeto_id, input)
-            st.session_state.contexto_atual = st.session_state.db.obter_ultimo_contexto(projeto_id)
-            st.session_state.msg_contexto_editado = 1
-            st.rerun()
 
 
 # Página de gestão de contexto
@@ -104,6 +113,10 @@ else:
         st.code(st.session_state.contexto_atual, language="markdown")
 
 # Barra lateral com ações de contexto
+st.sidebar.button(":material/wand_stars: Gerar contexto",
+                  width="stretch",
+                  on_click=gerar_contexto,
+                  disabled=st.session_state.projeto_atual is None)
 st.sidebar.button(":material/edit: Editar contexto",
                   width="stretch",
                   on_click=editar_contexto,
