@@ -1,9 +1,11 @@
 # Importações
 import streamlit as st
+from streamlit import session_state as sst
+import src.utils.ui as ui
 
 
 # Recupera a lista de projetos do banco de dados
-projetos = st.session_state.db.listar_projetos()
+projetos = sst.db.listar_projetos()
 
 
 # Diálogo de criação de projetos
@@ -24,8 +26,8 @@ def adicionar_projeto():
         
         # Inserção no banco de dados
         else:
-            st.session_state.db.adicionar_projeto(nome, cliente, descricao)
-            st.session_state.msg_projeto_criado = 1
+            sst.db.adicionar_projeto(nome, cliente, descricao)
+            ui.adicionar_mensagem("Projeto criado com sucesso!")
             st.rerun()
 
 
@@ -42,12 +44,12 @@ def carregar_projeto():
     if st.button("Carregar", width="stretch"):
         
         # Definição do projeto atual na sessão
-        st.session_state.projeto_atual = projetos.loc[id_projeto]
-        st.session_state.contexto_atual = st.session_state.db.obter_ultimo_contexto(id_projeto)
-        st.session_state.contexto_visualizado = None
+        sst.projeto_atual = projetos.loc[id_projeto]
+        sst.contexto_atual = sst.db.obter_ultimo_contexto(id_projeto)
+        sst.contexto_visualizado = None
         
         # Mensagem de sucesso
-        st.session_state.msg_projeto_carregado = 1
+        ui.adicionar_mensagem("Projeto carregado com sucesso!") 
         st.rerun()
 
 
@@ -67,13 +69,13 @@ def deletar_projeto():
     # Botão de deleção
     if st.button("Deletar", width="stretch", type="primary"):
         if texto == f"Deletar completamente projeto {projetos.loc[id_projeto, 'nome']}":
-            st.session_state.db.deletar_projeto(id_projeto)
-            st.session_state.msg_projeto_deletado = 1
+            sst.db.deletar_projeto(id_projeto)
+            ui.adicionar_mensagem("Projeto deletado com sucesso!")
             try:
-                if st.session_state.projeto_atual.name == id_projeto:
-                    st.session_state.projeto_atual = None
-                    st.session_state.contexto_atual = None
-                    st.session_state.contexto_visualizado = None
+                if sst.projeto_atual.name == id_projeto:
+                    sst.projeto_atual = None
+                    sst.contexto_atual = None
+                    sst.contexto_visualizado = None
             except: pass
             st.rerun()
         else:
@@ -81,19 +83,7 @@ def deletar_projeto():
 
 
 # Cabeçalho da página
-st.write("# :material/folder_open: Projetos")
-
-
-# Mensagens de status
-if st.session_state.msg_projeto_criado == 1:
-    st.success("Projeto criado com sucesso!")
-    st.session_state.msg_projeto_criado = 0
-if st.session_state.msg_projeto_carregado == 1:
-    st.success("Projeto carregado com sucesso!")
-    st.session_state.msg_projeto_carregado = 0
-if st.session_state.msg_projeto_deletado == 1:
-    st.success("Projeto deletado com sucesso!")
-    st.session_state.msg_projeto_deletado = 0
+st.header(":material/folder_open: Projetos", divider="gray")
 
 
 # Conteúdo da página
@@ -108,6 +98,8 @@ else:
     }
     st.dataframe(projetos, column_config=config, width="stretch")
 
+
+# Botões de ação
 st.sidebar.button(":material/add: Adicionar projeto",
                   width="stretch",
                   on_click=adicionar_projeto)
