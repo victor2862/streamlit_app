@@ -1,6 +1,7 @@
 # Importações
 import sqlite3 as sql
 import pandas as pd
+from src.utils.ai_utils import modelos_disponiveis
 
 
 # Definição da classe AppDB
@@ -41,6 +42,36 @@ class AppDB:
             ''')
             conn.commit()
 
+            # Criação da tabela de agentes
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS agentes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nome TEXT NOT NULL UNIQUE,
+                    modelo TEXT,
+                    system_prompt TEXT
+                    )
+            ''')
+            conn.commit()
+
+            # Inserir agentes padrão se não existirem
+            modelo_padrao = modelos_disponiveis()[0]
+            cursor.execute('SELECT id FROM agentes WHERE nome = ?', ('Gerador de Contexto',))
+            if not cursor.fetchone():
+                cursor.execute('''
+                    INSERT INTO agentes (nome, modelo, system_prompt)
+                    VALUES (?, ?, ?)
+                ''', ('Gerador de Contexto', modelo_padrao, ''))
+                conn.commit()
+
+            cursor.execute('SELECT id FROM agentes WHERE nome = ?', ('Gerador de Capas',))
+            if not cursor.fetchone():
+                cursor.execute('''
+                    INSERT INTO agentes (nome, modelo, system_prompt)
+                    VALUES (?, ?, ?)
+                ''', ('Gerador de Capas', modelo_padrao, ''))
+                conn.commit()
+
+
 
     ### Manipulação da tabela de projetos ---------------------------------------------------------
 
@@ -67,7 +98,6 @@ class AppDB:
             cursor = conn.cursor()
             cursor.execute('DELETE FROM projetos WHERE id = ?', (id_projeto,))
             conn.commit()
-
 
 
 
@@ -129,17 +159,44 @@ class AppDB:
 
 
 
+    ### Manipulação da tabela de agentes -----------------------------------------------------------
+
+    # Listar todos os agentes
+    def listar_agentes(self) -> pd.DataFrame:
+        with self.connect() as conn:
+            df = pd.read_sql_query("SELECT * FROM agentes", conn)
+            df.set_index('id', inplace=True)
+            return df
+
+    # Obter um agente pelo nome
+    def obter_agente(self, nome) -> dict:
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM agentes WHERE nome = ?", (nome,))
+            row = cursor.fetchone()
+            if row:
+                col_names = [description[0] for description in cursor.description]
+                return dict(zip(col_names, row))
+            return None
+
+    # Atualizar um agente
+    def atualizar_agente(self, nome, modelo=None, system_prompt=None):
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE agentes 
+                SET modelo = COALESCE(?, modelo),
+                    system_prompt = COALESCE(?, system_prompt)
+                WHERE nome = ?
+            ''', (modelo, system_prompt, nome))
+            conn.commit()
 
 
 
 
 
 
-
-
-
-
-
+    ### Funções de apoio -----------------------------------------------------------
 
     # Inserir contextos de exemplo em markdown para um projeto específico
     def inserir_contextos_exemplo(self):

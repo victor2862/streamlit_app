@@ -30,7 +30,7 @@ def editar_contexto():
     # Botão de salvar alterações
     with st.container(horizontal=True):
         st.space(size="stretch")
-        if st.button("Salvar alterações"):
+        if st.button("Salvar alterações", type="primary"):
             projeto_id = int(sst.projeto_atual.name)
             sst.db.adicionar_contexto(projeto_id, input)
             sst.contexto_atual = sst.db.obter_ultimo_contexto(projeto_id)
@@ -74,7 +74,7 @@ def restaurar_contexto():
             st.markdown(f"## Versão {versao} ({data_hora})")
 
             # Botão de restauração
-            if st.button("Restaurar esta versão"):
+            if st.button("Restaurar esta versão", type="primary"):
                 sst.db.adicionar_contexto(projeto_id, sst.contexto_visualizado['contexto'])
                 sst.contexto_atual = sst.db.obter_ultimo_contexto(projeto_id)
                 ui.adicionar_mensagem("Contexto restaurado com sucesso!")
